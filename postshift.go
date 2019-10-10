@@ -1,17 +1,18 @@
-package main
+package postshift
 
 import (
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
 	"net/url"
+
 )
 
-type mail struct {
+type Mail struct {
 	Email string
 	Key   string
 }
-type letter struct {
+type Letter struct {
 	Id      int    `json:"id"`
 	Message string `json:"message"`
 	Date    string `json:"date"`
@@ -20,7 +21,7 @@ type letter struct {
 }
 
 
-func newMail(name string, domainName string) (m *mail, err error) {
+func NewMail(name string, domainName string) (m *Mail, err error) {
 
 	p := url.Values{}
 
@@ -31,7 +32,7 @@ func newMail(name string, domainName string) (m *mail, err error) {
 		p.Add("domain", domainName)
 	}
 
-	resp, err := sendReq(p)
+	resp, err := SendReq(p)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func newMail(name string, domainName string) (m *mail, err error) {
 	return m, nil
 
 }
-func getMail(key string, id string, p url.Values) (*letter, error) {
+func GetMail(key string, id string, p url.Values) (*Letter, error) {
 	if p == nil {
 		p = url.Values{}
 	}
@@ -54,12 +55,12 @@ func getMail(key string, id string, p url.Values) (*letter, error) {
 	p.Add("key", key)
 	p.Add("forced","1") //без него текст не виден
 
-	resp, err := sendReq(p)
+	resp, err := SendReq(p)
 	if err != nil {
 		return nil, err
 	}
 
-	var jsonResp *letter
+	var jsonResp *Letter
 	if err = json.Unmarshal(resp, &jsonResp); err != nil {
 
 		return nil, err
@@ -68,12 +69,12 @@ func getMail(key string, id string, p url.Values) (*letter, error) {
 	return jsonResp, nil
 
 }
-func clear(key string)(clearStatus string,err error){
+func Clear(key string)(clearStatus string,err error){
 	p:=url.Values{}
 	p.Add("action","clear")
 	p.Add("key",key)
 	p.Add("type","json")
-	resp,err:=sendReq(p)
+	resp,err:= SendReq(p)
 	if err!=nil{
 		return "",nil
 	}
@@ -89,7 +90,7 @@ func clear(key string)(clearStatus string,err error){
 	return jsonResp["clear"], nil
 
 }
-func update(key string)(lifetime string,err error){
+func Update(key string)(lifetime string,err error){
 	p := url.Values{}
 
 	p.Add("action", "update")
@@ -97,7 +98,7 @@ func update(key string)(lifetime string,err error){
 	p.Add("key", key)
 
 
-	resp, err := sendReq(p)
+	resp, err := SendReq(p)
 	if err != nil {
 		return "", err
 	}
@@ -113,7 +114,7 @@ func update(key string)(lifetime string,err error){
 
 	return jsonResp["livetime"], nil
 }
-func lifetime(key string)(lifetime string,err error){
+func Lifetime(key string)(lifetime string,err error){
 	p := url.Values{}
 
 	p.Add("action", "livetime")
@@ -121,7 +122,7 @@ func lifetime(key string)(lifetime string,err error){
 	p.Add("key", key)
 
 
-	resp, err := sendReq(p)
+	resp, err := SendReq(p)
 	if err != nil {
 		return "", err
 	}
@@ -138,7 +139,7 @@ func lifetime(key string)(lifetime string,err error){
 	return jsonResp["livetime"], nil
 }
 
-func getList(key string) ([]letter, error) {
+func GetList(key string) ([]Letter, error) {
 	p := url.Values{}
 
 	p.Add("action", "getlist")
@@ -146,12 +147,12 @@ func getList(key string) ([]letter, error) {
 	p.Add("key", key)
 
 
-	resp, err := sendReq(p)
+	resp, err := SendReq(p)
 	if err != nil {
 		return nil, err
 	}
 
-	var jsonResp []letter
+	var jsonResp []Letter
 	if err = json.Unmarshal(resp, &jsonResp); err != nil {
 
 		return nil, err
@@ -160,7 +161,7 @@ func getList(key string) ([]letter, error) {
 	return jsonResp, nil
 
 }
-func deleteMail(key string) (deleteStatus string, err error) {
+func DeleteMail(key string) (deleteStatus string, err error) {
 
 	p := url.Values{}
 
@@ -168,7 +169,7 @@ func deleteMail(key string) (deleteStatus string, err error) {
 	p.Add("type", "json")
 	p.Add("key", key)
 
-	resp, err := sendReq(p)
+	resp, err := SendReq(p)
 	if err != nil {
 		return "", err
 	}
@@ -186,7 +187,7 @@ func deleteMail(key string) (deleteStatus string, err error) {
 
 }
 
-func sendReq(p url.Values) (response []byte, err error) {
+func SendReq(p url.Values) (response []byte, err error) {
 	myUrl, err := url.Parse("https://post-shift.ru/api.php?")
 	if err != nil {
 		return nil, err
@@ -208,5 +209,4 @@ func sendReq(p url.Values) (response []byte, err error) {
 
 	return respJSON, nil
 }
-
 
