@@ -201,6 +201,7 @@ func SendReq(p url.Values) (response []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	respJSON, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
